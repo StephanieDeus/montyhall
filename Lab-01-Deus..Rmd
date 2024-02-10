@@ -1,0 +1,135 @@
+---
+title: "Lab-01-Deus."
+author: "Stephanie Deus"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+## STEP 1 - CREATE A NEW GAME
+## This function sets up a new game.
+
+```{r}
+
+create_game <- function() {
+    a.game <- sample(x = c("goat", "goat", "car"), size = 3, replace = FALSE)
+    return(a.game)
+}
+```
+
+```{r}
+set.seed(123)
+game_setup_1 <- create_game()
+game_setup_2 <- create_game()
+game_setup_3 <- create_game()
+print(game_setup_1)
+print(game_setup_2)
+print(game_setup_3)
+
+```
+## STEP 2 - CONTESTANT SELECTS A DOOR
+## The contestant makes their first selection. 
+```{r}
+
+select_door <- function() {
+    doors <- c(1, 2, 3)
+    a.pick <- sample(doors, size = 1)
+    return(a.pick)
+}
+
+```
+
+```{r}
+initial_pick_1 <- select_door()
+initial_pick_2 <- select_door()
+initial_pick_3 <- select_door()
+print(initial_pick_1)
+print(initial_pick_2)
+print(initial_pick_3)
+
+```
+
+## STEP 3 - HOST OPENS GOAT DOOR
+## The host will always open a door with a goat behind it. But it can’t be a door the contestant has already selected. So it must be a door that is not a car and not a current contestant selection.
+
+
+```{r}
+
+open_goat_door <- function(game, a.pick) {
+    goat_doors <- which(game == "goat" & seq_along(game) != a.pick)
+    opened.door <- sample(goat_doors, size = 1)
+    return(opened.door)
+}
+```
+
+
+```{r}
+this_game <- create_game()
+initial_pick <- select_door()
+opened_door <- open_goat_door(this_game, initial_pick)
+print(this_game)
+print(initial_pick)
+print(opened_door)
+
+```
+
+
+## Function 4: change_door
+## This function represents the contestant's game-playing strategy (stay or switch). If stay=TRUE, the contestant keeps their initial pick. If stay=FALSE, the contestant switches doors.
+```{r}
+
+change_door <- function(stay, opened.door, a.pick) {
+    if (stay) {
+        final.pick <- a.pick
+    } else {
+        remaining_door <- setdiff(1:3, c(a.pick, opened.door))
+        final.pick <- sample(remaining_door, size = 1)
+    }
+    return(final.pick)
+}
+
+```
+
+```{r}
+
+opened_door_test <- open_goat_door(this_game, initial_pick)
+final_pick_stay_test <- change_door(stay = TRUE, opened.door = opened_door_test, a.pick = initial_pick)
+final_pick_switch_test <- change_door(stay = FALSE, opened.door = opened_door_test, a.pick = initial_pick)
+print(opened_door_test)
+print(final_pick_stay_test)
+print(final_pick_switch_test)
+
+```
+
+## Function 5: determine_winner
+## This function determines if the contestant has won or lost based on the final pick and the game setup.
+```{r}
+determine_winner <- function(final.pick, game) {
+    print(final.pick)
+    print(game)
+  
+    if (game[final.pick] == "car") {
+        return("WIN")
+    } else {
+        return("LOSE")
+    }
+}
+```
+
+```{r}
+final_pick_win_test <- change_door(stay = TRUE, opened.door = opened_door_test, a.pick = initial_pick)
+final_pick_lose_test <- change_door(stay = FALSE, opened.door = opened_door_test, a.pick = initial_pick)
+result_win_test <- determine_winner(final_pick_win_test, this_game)
+result_lose_test <- determine_winner(final_pick_lose_test, this_game)
+print(final_pick_win_test)
+print(final_pick_lose_test)
+print(result_win_test)
+print(result_lose_test)
+```
+
+
+
+
+

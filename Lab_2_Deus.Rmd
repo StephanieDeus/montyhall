@@ -1,0 +1,329 @@
+---
+title: "Lab 2"
+author: "Stephanie Deus"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r}
+play_game <- function()
+
+#Step 1
+create_game <- function()
+{
+    a.game <- sample( x=c("goat","goat","car"), size=3, replace=F )
+    return( a.game )
+} 
+```
+
+```{r}
+
+#Step 2
+select_door <- function()
+{
+  doors <- c(1,2,3) 
+  a.pick <- sample( doors, size=1 )
+  return( a.pick )  # number between 1 and 3
+}
+```
+
+```{r}
+#Step 3
+open_goat_door <- function( game, a.pick )
+{
+   doors <- c(1,2,3)
+   # if contestant selected car,
+   # randomly select one of two goats 
+   if( game[ a.pick ] == "car" )
+   { 
+     goat.doors <- doors[ game != "car" ] 
+     opened.door <- sample( goat.doors, size=1 )
+   }
+   if( game[ a.pick ] == "goat" )
+   { 
+     opened.door <- doors[ game != "car" & doors != a.pick ] 
+   }
+   return( opened.door ) # number between 1 and 3
+}
+```
+
+```{r}
+
+#Step 4
+change_door <- function( stay=T, opened.door, a.pick )
+{
+   doors <- c(1,2,3) 
+   
+   if( stay )
+   {
+     final.pick <- a.pick
+   }
+   if( ! stay )
+   {
+     final.pick <- doors[ doors != opened.door & doors != a.pick ] 
+   }
+  
+   return( final.pick )  # number between 1 and 3
+}
+```
+
+```{r}
+#Step 5
+determine_winner <- function( final.pick, game )
+{
+   if( game[ final.pick ] == "car" )
+   {
+      return( "WIN" )
+   }
+   if( game[ final.pick ] == "goat" )
+   {
+      return( "LOSE" )
+   }
+}
+```
+
+```{r}
+play_game <- function( )
+  
+{
+  new.game <- create_game()
+  first.pick <- select_door()
+  opened.door <- open_goat_door( new.game, first.pick )
+  final.pick.stay <- change_door( stay=T, opened.door, first.pick )
+  final.pick.switch <- change_door( stay=F, opened.door, first.pick )
+  outcome.stay <- determine_winner( final.pick.stay, new.game  )
+  outcome.switch <- determine_winner( final.pick.switch, new.game )
+  
+
+  # game.results <- bundle the results
+  # return( <<< game.results >>> )
+  
+  strategy <- c("stay","switch")
+  outcome <- c(outcome.stay,outcome.switch)
+  game.results <- data.frame( strategy, outcome,
+                              stringsAsFactors=F )
+  return( game.results )
+}
+
+determine_winner <- function(final.pick, game) {
+  ifelse(any(game[final.pick] == "car", na.rm = TRUE), "WIN", "LOSE")
+}
+
+play_game()
+```
+
+
+
+```{r}
+
+results.df <- NULL   # collector
+
+for( i in 1:10000 )  # iterator
+{
+  game.outcome <- play_game()
+  # binding step
+  results.df <- rbind( results.df, game.outcome )
+}
+
+table( results.df ) 
+
+
+```
+
+```{r}
+
+game.outcome <- play_game()
+results.df <- rbind( results.df, game.outcome )
+
+
+```
+
+```{r}
+
+# creating an empty collector object
+results.df <- NULL   
+# later, inside the loop
+results.df <- rbind( results.df, game.outcome )
+
+```
+
+```{r}
+x <- 1:4
+c( x, 9 )
+```
+
+```{r}
+game1 <- play_game()
+game2 <- play_game()
+rbind( game1, game2 )
+```
+```{r}
+c( game1, game2 )
+
+```
+```{r}
+results.df <- NULL 
+rbind( results.df, game.outcome )
+```
+```{r}
+# Modified create_game function for 3 doors with 2 cars and 1 goat
+create_game <- function() {
+    a.game <- sample(x = c("goat", "car", "car"), size = 3, replace = FALSE)
+    return(a.game)
+}
+```
+
+```{r}
+
+# Modified open_goat_door function to handle 3 doors
+open_goat_door <- function(game, a.pick) {
+    non_chosen_doors <- setdiff(1:3, a.pick)
+    goat_door <- non_chosen_doors[game[non_chosen_doors] == "goat"]
+    return(goat_door)
+}
+```
+
+```{r}
+# Modified play_game function for the 3-door setup
+play_game <- function() {
+    new.game <- create_game()
+    first.pick <- select_door()
+    goat_door <- open_goat_door(new.game, first.pick)
+    
+    # Assume contestant always switches for simplicity
+    remaining_door <- setdiff(1:3, c(first.pick, goat_door))
+    final.pick <- remaining_door
+    outcome <- determine_winner(final.pick, new.game)
+    
+    strategy <- "switch"  # Contestant always switches
+    game.results <- data.frame(strategy, outcome, stringsAsFactors = FALSE)
+    return(game.results)
+}
+
+```
+
+```{r}
+# Simulation loop
+results.df <- NULL
+
+
+for (i in 1:10000) {
+    game.outcome <- play_game()
+    results.df <- rbind(results.df, game.outcome)
+}
+
+# Display results
+table(results.df) %>% 
+  prop.table(margin = 1) %>% 
+  round(2)
+
+```
+**Q1: Is SWITCH still the dominant strategy?**
+
+Yes, according to my data above switch is the the highest win.
+
+
+Part II
+
+
+```{r}
+
+open_goat_door <- function(game_setup, contestant_pick) {
+  goat_doors <- which(game_setup == "goat" & seq_along(game_setup) != contestant_pick)
+  opened_door <- sample(goat_doors, 1)
+  return(opened_door)
+}
+
+create_custom_game <- function(cars, goats, total_doors) {
+  game_setup <- c(rep("goat", goats), rep("car", cars))
+  shuffled_setup <- sample(game_setup, size = total_doors, replace = TRUE)  
+  return(shuffled_setup)
+}
+
+play_game_custom <- function(cars, goats, total_doors) {
+  new.game <- create_custom_game(cars, goats, total_doors)
+  first.pick <- sample(1:total_doors, 1)  
+  opened.door <- open_goat_door(new.game, first.pick)
+  final.pick.stay <- change_door(stay = TRUE, opened.door, first.pick)
+  final.pick.switch <- change_door(stay = FALSE, opened.door, first.pick)
+  outcome.stay <- determine_winner(final.pick.stay, new.game)
+  outcome.switch <- determine_winner(final.pick.switch, new.game)
+  
+  strategy <- c("stay", "switch")
+  outcome <- c(outcome.stay, outcome.switch)
+  game.results <- data.frame(strategy, outcome, stringsAsFactors = FALSE)
+  return(game.results)
+}
+```
+
+```{r}
+
+# Simulation for 1 car, 9 goats
+total_doors_scenario1 <- 10
+results_scenario1 <- NULL
+
+for (i in 1:10000) {
+  game.outcome <- play_game_custom(cars = 1, goats = 9, total_doors = total_doors_scenario1)
+  results_scenario1 <- rbind(results_scenario1, game.outcome)
+}
+
+# Simulation for 2 cars, 8 goats
+total_doors_scenario2 <- 10
+results_scenario2 <- NULL
+
+for (i in 1:10000) {
+  game.outcome <- play_game_custom(cars = 2, goats = 8, total_doors = total_doors_scenario2)
+  results_scenario2 <- rbind(results_scenario2, game.outcome)
+}
+
+# Simulation for 3 cars, 7 goats
+total_doors_scenario3 <- 10
+results_scenario3 <- NULL
+
+for (i in 1:10000) {
+  game.outcome <- play_game_custom(cars = 3, goats = 7, total_doors = total_doors_scenario3)
+  results_scenario3 <- rbind(results_scenario3, game.outcome)
+}
+```
+
+```{r}
+table_scenario1 <- table(results_scenario1$strategy, results_scenario1$outcome)
+table_scenario2 <- table(results_scenario2$strategy, results_scenario2$outcome)
+table_scenario3 <- table(results_scenario3$strategy, results_scenario3$outcome)
+
+prop_table_scenario1 <- prop.table(table_scenario1, margin = 1)
+prop_table_scenario2 <- prop.table(table_scenario2, margin = 1)
+prop_table_scenario3 <- prop.table(table_scenario3, margin = 1)
+
+round(prop_table_scenario1, 2)
+round(prop_table_scenario2, 2)
+round(prop_table_scenario3, 2)
+
+
+```
+
+**Q1: Is SWITCH still the dominant strategy?**
+
+Scenario with 1 car and 9 goats: Stay: 10% Wins, Switch: 11% Wins
+Scenario with 2 cars and 8 goats: Stay: 20% Wins, Switch: 22% Wins
+Scenario with 3 cars and 7 goats: Stay: 31% Wins, Switch: 33% Wins
+
+In all scenarios, the strategy of switching doors gives a higher proportion of wins compared to the strategy of staying with the initial choice. The chances of winning increase when participants choose to switch doors.
+
+
+**Q2: How much better off are you switching in the original game? How much did it improve your chances of winning?**
+
+In the original Monty Hall Problem with 3 doors, 1 car, and 2 goats, participants who choose to switch doors have a slightly better chance of winning (11%) compared to those who stay with their initial choice (10%). Switching improves the chances of winning by 1%.
+
+
+**Q3: How much better off are you switching in each of the three scenarios with 10 doors and 1 to 3 cars?**
+
+Scenario with 1 car and 9 goats: 1% better off switching
+Scenario with 2 cars and 8 goats: 2% better off switching
+Scenario with 3 cars and 7 goats: 2% better off switching
+
+In each scenario, switching improves the chances of winning, and the improvement varies between 1% and 2%.
+
+
+
+
